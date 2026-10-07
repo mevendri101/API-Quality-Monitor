@@ -1,0 +1,20 @@
+services:
+  monitor:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - monitor-data:/data
+    depends_on:
+      demo:
+        condition: service_healthy
+  demo:
+    build: .
+    command: ["uvicorn", "monitor.demo:app", "--host", "0.0.0.0", "--port", "8001"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 3s
+      timeout: 2s
+      retries: 10
+volumes:
+  monitor-data:
